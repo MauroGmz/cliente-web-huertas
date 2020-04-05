@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script>
+    $(document).ready(function(){  
+    let counter = 0;
+    var datos = {
+		labels : [],
+		datasets : [{
+			label : "Temperatura",
+            backgroundColor: 'rgb(52, 73, 94)',
+            borderColor: 'rgb(41, 128, 185)',
+			data : []
+		}
+		]
+	};  
+    setInterval(function(){
+        
+        fetch('https://api.thingspeak.com/channels/9/feeds.json?results=1')
+        .then((respuesta) => {
+            return respuesta.json();
+        }).then((respuesta) => {
+            console.log(respuesta.feeds[0].field1);
+
+            var salidaTemp = '';
+            var salidaIlum = '';
+            var temp = 0;
+
+            for(var i = 0; i < respuesta.feeds.length; i++){
+                salidaTemp += `<li>${respuesta.feeds[i].field2}</li>`;
+                salidaIlum += `<li>${respuesta.feeds[i].field1}</li>`;
+                temp = respuesta.feeds[i].field2;
+            }
+
+            document.getElementById('temperatura')
+                .innerHTML = salidaTemp;
+            document.getElementById('iluminacion')
+                .innerHTML = salidaIlum;
+            
+            var ctx = document.getElementById('myCanvas').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: datos,
+                options: {}
+            });
+            myChart.data.labels.push(counter);
+            myChart.data.datasets.forEach(dataset => {
+                dataset.data.push(temp);
+            });
+            counter++;
+            myChart.update();
+        })
+    }, 10000);
+    });
+    </script>
+</head>
+<body>  
+
+    <h1> NODO ARDUINO</h1>
+
+    <h2>Temperatura</h2>
+    <ul id="temperatura"></ul>
+
+    <h2>Iluminación</h2>
+    <ul id="iluminacion"> </ul>
+
+    <canvas id="myCanvas" width="500" height="350"></canvas>
+
+    
+    <script>
+       
+    </script>
+</body>
+</html>
